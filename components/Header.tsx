@@ -3,13 +3,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 const Header = () => {
     return(
-        <View style={styles.headerContainer}>
+        <SafeAreaView style={styles.headerContainer}>
             <Image 
             style={styles.peiixLogo}
             source={require('../assets/images/peiixlogo.png')}
             />
             <MaterialCommunityIcons name="logout" size={48} color='#FFFFFF'/>
-        </View>
+        </SafeAreaView>
     );
 
 }
@@ -19,8 +19,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         backgroundColor: '#000000',
         justifyContent:'space-between',
-        padding: 30,
-        paddingTop: 60,
+        paddingLeft: 15,
+        paddingRight: 15,
+        paddingTop: 15,
         alignItems: 'center',
         position: 'absolute',
         width: '100%',
