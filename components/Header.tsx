@@ -1,14 +1,19 @@
 import { Image, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-const Header = () => {
+import { NavigationProp } from "@react-navigation/native";
+const Header = ({ navigation }: { navigation: NavigationProp<any> }) => {
     return(
         <SafeAreaView style={styles.headerContainer}>
             <Image 
             style={styles.peiixLogo}
             source={require('../assets/images/peiixlogo.png')}
             />
-            <MaterialCommunityIcons name="logout" size={48} color='#FFFFFF'/>
+            <MaterialCommunityIcons name="logout" size={48} color='#FFFFFF'
+            onPress={() => {
+                navigation.navigate('LogOutScreen')
+            }}
+            />
         </SafeAreaView>
     );
 

@@ -13,8 +13,8 @@ function MainNavigationContainer() {
     <Tab.Navigator
     initialRouteName='Transacciones'
     screenOptions={{
-      header: () => {
-        return <Header />
+      header: ({ navigation }) => {
+        return <Header navigation={navigation} />
       },
       tabBarStyle: {
         backgroundColor: '#000000',

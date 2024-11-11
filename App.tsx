@@ -5,6 +5,7 @@ import LoginScreen from './screens/LoginScreen';
 import TerminalesPage from './screens/TerminalesPage';
 import MainNavigationContainer from './navigation/MainNavigationContainer';
 import Header from './components/Header';
+import LogOutScreen from './screens/LogOutScreen';
 //import MainStack from './navigation/MainStack';
 import { NavigationContainer } from '@react-navigation/native';
 import MainStack from './navigation/MainStack';
