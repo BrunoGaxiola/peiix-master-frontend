@@ -4,7 +4,7 @@ import TransaccionesPage from "../screens/TransaccionesPage";
 import TerminalesPage from "../screens/TerminalesPage";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Fontisto from '@expo/vector-icons/Fontisto';
-
+import Header from "../components/Header";
 
 const Tab = createBottomTabNavigator();
 
@@ -13,7 +13,9 @@ function MainNavigationContainer() {
     <Tab.Navigator
     initialRouteName='Transacciones'
     screenOptions={{
-      headerShown: false,
+      header: () => {
+        return <Header />
+      },
       tabBarStyle: {
         backgroundColor: '#000000',
         height: 96,

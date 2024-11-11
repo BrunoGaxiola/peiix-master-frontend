@@ -4,6 +4,7 @@ import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import LoginScreen from './screens/LoginScreen';
 import TerminalesPage from './screens/TerminalesPage';
 import MainNavigationContainer from './navigation/MainNavigationContainer';
+import Header from './components/Header';
 //import MainStack from './navigation/MainStack';
 import { NavigationContainer } from '@react-navigation/native';
 import MainStack from './navigation/MainStack';
