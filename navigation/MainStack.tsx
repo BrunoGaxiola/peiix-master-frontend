@@ -4,6 +4,7 @@ import LogOutScreen from "../screens/LogOutScreen";
 import MainNavigationContainer from "./MainNavigationContainer";
 const Stack = createStackNavigator();
 
+// Este componente sirve para separar las páginas entre el inicio de sesión, la app principal y el cierre de sesión.
 function MainStack() {
     return(
         <Stack.Navigator

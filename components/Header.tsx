@@ -1,7 +1,9 @@
-import { Image, StyleSheet, View } from "react-native";
+import { Image, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
+
+// Componente de encabezado de la aplicación principal.
 const Header = ({ navigation }: { navigation: NavigationProp<any> }) => {
     return(
         <SafeAreaView style={styles.headerContainer}>
@@ -11,7 +13,7 @@ const Header = ({ navigation }: { navigation: NavigationProp<any> }) => {
             />
             <MaterialCommunityIcons name="logout" size={48} color='#FFFFFF'
             onPress={() => {
-                navigation.navigate('LogOutScreen')
+                navigation.navigate('LogOutScreen') // Navegar a la pantalla de logout.
             }}
             />
         </SafeAreaView>

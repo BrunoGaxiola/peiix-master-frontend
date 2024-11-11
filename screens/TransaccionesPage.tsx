@@ -1,6 +1,7 @@
-import { Text, View, StyleSheet } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Text, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+// Placeholder para la página de Transacciones.
 const TransaccionesPage = () => {
     return (
         <SafeAreaView style ={styles.container}>

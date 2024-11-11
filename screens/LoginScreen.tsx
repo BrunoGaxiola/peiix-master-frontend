@@ -1,10 +1,11 @@
 import { StyleSheet, TextInput, Text, View, Image, TouchableOpacity, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 
+// Componente de la página de inicio de sesión.
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     return (
         <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView
+            <KeyboardAvoidingView // Para evitar que el teclado se interponga.
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.innerContainer}
             >

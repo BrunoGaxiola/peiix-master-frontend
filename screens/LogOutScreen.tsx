@@ -6,14 +6,15 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 
+// Componente para la página de cerrar sesión.
 const LogOutScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
-    const back = useNavigation();
+    const back = useNavigation(); // Utilizado para navegar hacia atrás para no reiniciar la página.
 
     return(
         <SafeAreaView style={styles.logOutScreenContainer}>
             <View style={styles.backButton}>
                 <TouchableOpacity>
-                    <Ionicons name="arrow-back-circle" size={64} color='#000000'
+                    <Ionicons name="arrow-back-circle" size={64} color='#000000' // Ícono de back.
                     onPress={() => {
                         back.goBack();
                     }}
@@ -24,7 +25,7 @@ const LogOutScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             onPress={() => {
                 navigation.navigate('Login');
             }}>
-                <MaterialCommunityIcons name="logout" size={48} color='#FF0000'/>
+                <MaterialCommunityIcons name="logout" size={48} color='#FF0000'/> 
                 <Text style={styles.logOutText}> Cerrar Sesión </Text>
             </TouchableOpacity>
         </SafeAreaView>

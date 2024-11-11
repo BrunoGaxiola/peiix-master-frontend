@@ -1,6 +1,7 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// Placeholder para la página de Terminales.
 const TerminalesPage = () => {
     return (
         <SafeAreaView style ={styles.container}>
