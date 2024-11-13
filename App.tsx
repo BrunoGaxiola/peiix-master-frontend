@@ -1,34 +1,28 @@
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import ExportModal from './components/buttonCSV';
+import React from 'react';
+import { View, FlatList, StyleSheet, ListRenderItem } from 'react-native';
+import DeviceCard from './components/terminales';
+import { devices, Device } from './components/devicesData';
 
-export default function App() {
-  const [isModalVisible, setIsModalVisible] = useState(false);
+const App = () => {
+  const renderItem: ListRenderItem<Device> = ({ item }) => (
+    <DeviceCard name={item.name} onPress={() => alert(item.name)} />
+  );
 
   return (
-    <View style={styles.container}>
-      <Text>Hello Peiix!</Text>
-
-      {/* Export Button */}
-      <TouchableOpacity
-        style={styles.exportButton}
-        onPress={() => setIsModalVisible(true)}
-      >
-        <Text style={styles.exportButtonText}>Exportar</Text>
-        <Ionicons name="download" size={18} color="black" />
-      </TouchableOpacity>
-
-      {/* Export Modal */}
-      <ExportModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
-      
-      <StatusBar style="auto" />
-    </View>
+    <FlatList
+      data={devices}
+      keyExtractor={(item) => item.id}
+      renderItem={renderItem}
+      contentContainerStyle={styles.container1}
+    />
   );
-}
+};
 
 const styles = StyleSheet.create({
+  container1: {
+    paddingTop: 80,
+    padding: 40,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -51,3 +45,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export default App;
