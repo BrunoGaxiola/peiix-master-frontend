@@ -1,15 +1,31 @@
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
+import * as Font from 'expo-font'
+import { useState, useEffect } from 'react';
 
 // Componente para la página de cerrar sesión.
 const LogOutScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const back = useNavigation(); // Utilizado para navegar hacia atrás para no reiniciar la página.
+    const [fontsLoaded, setFontsLoaded] = useState(false);
 
+    useEffect(() => {
+        async function loadFonts() {
+        await Font.loadAsync({
+            MontserratSemiBold: require('../assets/fonts/Montserrat-SemiBold.ttf'),
+        });
+        setFontsLoaded(true);
+        }
+        loadFonts();
+    }, []);
+  
+    if (!fontsLoaded) {
+        return null;
+    }
     return(
         <SafeAreaView style={styles.logOutScreenContainer}>
             <View style={styles.backButton}>
@@ -51,7 +67,7 @@ const styles = StyleSheet.create({
         gap: 10
     },
     logOutText: {
-        fontFamily: 'Montserrat',
+        fontFamily: 'MontserratSemiBold',
         fontSize: 20,
         fontWeight: '500'
     }

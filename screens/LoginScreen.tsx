@@ -1,8 +1,28 @@
 import { StyleSheet, TextInput, Text, View, Image, TouchableOpacity, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
+import * as Font from 'expo-font'
+import { useState, useEffect } from 'react';
 
 // Componente de la página de inicio de sesión.
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
+    const [fontsLoaded, setFontsLoaded] = useState(false);
+
+    useEffect(() => {
+        async function loadFonts() {
+        await Font.loadAsync({
+            MontserratRegular: require('../assets/fonts/Montserrat-Regular.ttf'),
+            MontserratSemiBold: require('../assets/fonts/Montserrat-SemiBold.ttf'),
+            MontserratMedium: require('../assets/fonts/Montserrat-Medium.ttf'),
+        });
+        setFontsLoaded(true);
+        }
+        loadFonts();
+    }, []);
+
+    if (!fontsLoaded) {
+        return null;
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView // Para evitar que el teclado se interponga.
@@ -55,7 +75,7 @@ const styles = StyleSheet.create({
     },
     intro: {
         fontSize: 32,
-        fontWeight: '500',
+        fontFamily: 'MontserratMedium',
         marginBottom: 30,
     },
     formSpaces: {
@@ -63,9 +83,11 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     textForm: {
+        fontFamily: 'MontserratMedium',
         fontSize: 16,
     },
     textbox: {
+        fontFamily: 'MontserratMedium',
         backgroundColor: '#BBBBBB',
         width: 295,
         height: 35,
@@ -87,6 +109,7 @@ const styles = StyleSheet.create({
         marginTop: 30,
     },
     loginButtonText: {
+        fontFamily: 'MontserratSemiBold',
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',

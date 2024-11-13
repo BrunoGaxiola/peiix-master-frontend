@@ -4,12 +4,29 @@ import TerminalesPage from "../screens/TerminalesPage";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import Header from "../components/Header";
+import * as Font from 'expo-font'
+import { useState, useEffect } from 'react';
 
 // Componente con las pestañas de la aplicación principal.
 const Tab = createBottomTabNavigator();
 
 // Pestañas de la aplicación principal.
 function MainNavigationContainer() {
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+      async function loadFonts() {
+      await Font.loadAsync({
+          MontserratMedium: require('../assets/fonts/Montserrat-Medium.ttf'),
+      });
+      setFontsLoaded(true);
+      }
+      loadFonts();
+  }, []);
+
+  if (!fontsLoaded) {
+      return null;
+  }
   return (
     <Tab.Navigator
     initialRouteName='Transacciones' // Al entrar a la app, esta pestaña siempre será la primera en aparecer.
@@ -22,7 +39,7 @@ function MainNavigationContainer() {
         backgroundColor: '#000000',
         height: 96,
         position: 'absolute',
-        paddingTop: 10
+        paddingTop: 10,
       },
       tabBarActiveTintColor: '#0E9600',
       tabBarInactiveTintColor: '#FFFFFF',
