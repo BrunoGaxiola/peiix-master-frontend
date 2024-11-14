@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function DetailsScreen({ route }) {
   const navigation = useNavigation();
-  const { amount, date, terminal, bank, cardType } = route.params;
+  const { amount = '$25', date, terminal, bank, cardType } = route.params;
 
   return (
     <View style={styles.container}>
@@ -14,8 +14,8 @@ export default function DetailsScreen({ route }) {
         <Text style={styles.closeText}>✕</Text>
       </TouchableOpacity>
 
-      {/* Monto */}
-      <Text style={styles.amount}>{amount}</Text>
+      {/* Monto grande */}
+      <Text style={styles.largeAmount}>{amount}</Text>
 
       {/* Contenedor de detalles */}
       <View style={styles.detailsContainer}>
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 20,
+    top: 100,
     left: 20,
     backgroundColor: '#333',
     width: 40,
@@ -85,21 +85,21 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  amount: {
-    fontSize: 48,
+  largeAmount: {
+    fontSize: 100,
     fontWeight: 'bold',
     color: '#000',
-    marginTop: 60,
+    marginTop: 80,
+    textAlign: 'center',
   },
   detailsContainer: {
-    marginTop: 20,
-    width: '100%',
-    paddingHorizontal: 20,
+    marginTop: 30,
+    width: '90%',
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 4,
+    marginVertical: 6,
   },
   label: {
     fontSize: 16,

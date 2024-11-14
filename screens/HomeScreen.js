@@ -4,8 +4,10 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator
 
 const { width } = Dimensions.get('window');
 
+const transactionCost = '$5';
+
 export default function HomeScreen({ navigation }) {
-  const initialData = [...Array(3)].map((_, index) => ({
+  const initialData = [...Array(10)].map((_, index) => ({
     id: index.toString(),
     amount: '$25',
     date: '2024-05-14',
