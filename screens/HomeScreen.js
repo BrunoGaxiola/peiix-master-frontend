@@ -1,52 +1,78 @@
-// screens/HomeScreen.js
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+// screens/HomeScreen.js o HomeScreen.tsx
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 
-export default function HomeScreen() {
+const { width } = Dimensions.get('window');
+
+export default function HomeScreen({ navigation }) { // Asegúrate de recibir navigation aquí
+  const initialData = [...Array(3)].map((_, index) => ({
+    id: index.toString(),
+    amount: '$25',
+    date: '2024-05-14',
+    terminal: 'Test Device 0001',
+    bank: 'BANCOMER',
+    cardType: 'DEBIT',
+  }));
+
+  const [data, setData] = useState(initialData);
+  const [loading, setLoading] = useState(false);
+
+  const loadMoreData = () => {
+    setLoading(true);
+    setTimeout(() => {
+      const moreData = [...Array(3)].map((_, index) => ({
+        id: (data.length + index).toString(),
+        amount: '$25',
+        date: '2024-05-14',
+        terminal: 'Test Device 0001',
+        bank: 'BANCOMER',
+        cardType: 'DEBIT',
+      }));
+      setData([...data, ...moreData]);
+      setLoading(false);
+    }, 1500);
+  };
+
+  const handleCardPress = (item) => {
+    try {
+      navigation.navigate('Details', { item }); // Usa navigate correctamente aquí
+    } catch (error) {
+      console.error('Error al navegar:', error); // Log de error para depurar
+    }
+  };
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity style={styles.card} onPress={() => handleCardPress(item)}>
+      <Text style={styles.amount}>{item.amount}</Text>
+      <Text style={styles.detail}>
+        <Text style={styles.bold}>Fecha:</Text> {item.date}
+      </Text>
+      <Text style={styles.detail}>
+        <Text style={styles.bold}>Terminal:</Text> {item.terminal}
+      </Text>
+      <Text style={styles.detail}>
+        <Text style={styles.bold}>Banco:</Text> {item.bank}
+      </Text>
+      <Text style={styles.detail}>
+        <Text style={styles.bold}>Tarjeta:</Text> {item.cardType}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
-      {/* Barra de Encabezado Personalizada */}
-      <View style={styles.header}>
-        <Text style={styles.logoText}>Peiix</Text>
-        <FontAwesome5 name="user-circle" size={24} color="white" />
-      </View>
-
-      {/* Botones de Exportar y Filtrar */}
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.exportButton}>
-          <Text style={styles.buttonText}>Exportar</Text>
-          <MaterialIcons name="file-download" size={16} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterButton}>
-          <Text style={styles.buttonText}>Filtrar</Text>
-          <FontAwesome5 name="filter" size={16} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Lista de Tarjetas */}
-      <ScrollView contentContainerStyle={styles.cardContainer}>
-        {[...Array(10)].map((_, index) => (
-          <View key={index} style={styles.card}>
-            <Text style={styles.amount}>$25</Text>
-            <Text style={styles.detail}>Fecha: 2024-05-14</Text>
-            <Text style={styles.detail}>Terminal: Test Device 0001</Text>
-            <Text style={styles.detail}>Banco: BANCOMER</Text>
-            <Text style={styles.detail}>Tarjeta: DEBIT</Text>
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* Barra de Navegación Inferior */}
-      <View style={styles.navbar}>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome5 name="wallet" size={20} color="green" />
-          <Text style={styles.navText}>Transacciones</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome5 name="tablet-alt" size={20} color="white" />
-          <Text style={styles.navText}>Terminales</Text>
-        </TouchableOpacity>
-      </View>
+      <FlashList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        estimatedItemSize={150}
+        contentContainerStyle={styles.cardContainer}
+        onEndReached={loadMoreData}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={loading ? <ActivityIndicator size="large" color="#0000ff" /> : null}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
@@ -54,92 +80,43 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
     backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#000',
-    padding: 15,
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-  },
-  exportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F09600',
-    padding: 10,
-    borderRadius: 10,
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#8EC100',
-    padding: 10,
-    borderRadius: 10,
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    marginRight: 20,
+    paddingVertical: 20,
   },
   cardContainer: {
-    alignItems: 'center', // Centra las tarjetas horizontalmente
-    paddingVertical: 10,
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   card: {
-    width: '90%', // Ocupa el 90% del ancho de la pantalla
+    width: '90%',
+    maxWidth: 400,
     backgroundColor: '#e0e0e0',
     padding: 20,
     marginVertical: 10,
-    borderRadius: 35,
+    borderRadius: 20,
     borderLeftWidth: 5,
-    borderRightWidth: 0.01,
-    borderBottomWidth: 15, 
+    borderBottomWidth: 15,
     borderLeftColor: '#8EC100',
-    borderrightColor: '#8EC100',
     borderBottomColor: '#8EC100',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 10, 
+    elevation: 10,
   },
   amount: {
-    fontSize: 50,
+    fontSize: 40,
     fontWeight: 'bold',
     color: '#000',
-    textAlign: 'center', // Centra el texto del monto
+    textAlign: 'center',
   },
   detail: {
     fontSize: 14,
     color: '#333',
-    textAlign: 'left', // Alinea a la izquierda el texto de detalles
     marginVertical: 2,
   },
-  navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-    backgroundColor: '#000',
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-  },
-  navItem: {
-    alignItems: 'center',
-  },
-  navText: {
-    color: '#fff',
-    fontSize: 12,
+  bold: {
+    fontWeight: 'bold',
   },
 });
