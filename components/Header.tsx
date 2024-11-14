@@ -29,7 +29,6 @@ const styles = StyleSheet.create({
         paddingLeft: 15,
         paddingRight: 15,
         paddingTop: 15,
-        paddingBottom: 5,
         alignItems: 'center',
         position: 'absolute',
         width: '100%',

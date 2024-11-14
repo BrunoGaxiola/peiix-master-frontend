@@ -1,5 +1,6 @@
 {
   "expo": {
+    "newArchEnabled": true,
     "name": "peiix-master-frontend",
     "slug": "peiix-master-frontend",
     "version": "1.0.0",

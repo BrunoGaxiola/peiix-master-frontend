@@ -39,7 +39,10 @@ const LogOutScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             </View>
             <TouchableOpacity style={styles.logOutButton}
             onPress={() => {
-                navigation.navigate('Login');
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                });
             }}>
                 <MaterialCommunityIcons name="logout" size={48} color='#FF0000'/> 
                 <Text style={styles.logOutText}> Cerrar Sesión </Text>

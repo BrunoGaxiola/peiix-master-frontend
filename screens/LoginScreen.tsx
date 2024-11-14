@@ -50,7 +50,10 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 </View>
                 <TouchableOpacity
                     onPress={() => {
-                        navigation.navigate('MainContainer');
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'MainContainer' }],
+                        });
                     }}
                     style={styles.loginButton}
                     activeOpacity={0.5}
