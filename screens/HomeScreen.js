@@ -1,11 +1,10 @@
 // screens/HomeScreen.js o HomeScreen.tsx
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator, FlatList } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-export default function HomeScreen({ navigation }) { // Asegúrate de recibir navigation aquí
+export default function HomeScreen({ navigation }) {
   const initialData = [...Array(3)].map((_, index) => ({
     id: index.toString(),
     amount: '$25',
@@ -21,7 +20,7 @@ export default function HomeScreen({ navigation }) { // Asegúrate de recibir na
   const loadMoreData = () => {
     setLoading(true);
     setTimeout(() => {
-      const moreData = [...Array(3)].map((_, index) => ({
+      const moreData = [...Array(10)].map((_, index) => ({
         id: (data.length + index).toString(),
         amount: '$25',
         date: '2024-05-14',
@@ -36,9 +35,9 @@ export default function HomeScreen({ navigation }) { // Asegúrate de recibir na
 
   const handleCardPress = (item) => {
     try {
-      navigation.navigate('Details', { item }); // Usa navigate correctamente aquí
+      navigation.navigate('Details', { item });
     } catch (error) {
-      console.error('Error al navegar:', error); // Log de error para depurar
+      console.error('Error al navegar:', error);
     }
   };
 
@@ -62,11 +61,10 @@ export default function HomeScreen({ navigation }) { // Asegúrate de recibir na
 
   return (
     <View style={styles.container}>
-      <FlashList
+      <FlatList
         data={data}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        estimatedItemSize={150}
         contentContainerStyle={styles.cardContainer}
         onEndReached={loadMoreData}
         onEndReachedThreshold={0.5}
@@ -90,10 +88,10 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '90%',
-    maxWidth: 400,
+    maxWidth: 800,
     backgroundColor: '#e0e0e0',
     padding: 20,
-    marginVertical: 10,
+    marginVertical: 15,
     borderRadius: 20,
     borderLeftWidth: 5,
     borderBottomWidth: 15,

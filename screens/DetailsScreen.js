@@ -14,18 +14,47 @@ export default function DetailsScreen({ route }) {
         <Text style={styles.closeText}>✕</Text>
       </TouchableOpacity>
 
-      {/* Detalles de la transacción */}
+      {/* Monto */}
       <Text style={styles.amount}>{amount}</Text>
+
+      {/* Contenedor de detalles */}
       <View style={styles.detailsContainer}>
-        <Text style={styles.label}>ID de transacción: <Text style={styles.value}>194402170</Text></Text>
-        <Text style={styles.label}>Banco: <Text style={styles.value}>{bank}</Text></Text>
-        <Text style={styles.label}>Tipo de tarjeta: <Text style={styles.value}>{cardType}</Text></Text>
-        <Text style={styles.label}>Fecha: <Text style={styles.value}>{date}</Text></Text>
-        <Text style={styles.label}>Terminal: <Text style={styles.value}>{terminal}</Text></Text>
-        <Text style={styles.label}>Propina: <Text style={styles.value}>$0</Text></Text>
-        <Text style={styles.label}>Monto total: <Text style={styles.value}>{amount}</Text></Text>
-        <Text style={styles.label}>Tipo de transacción: <Text style={styles.value}>Venta</Text></Text>
-        <Text style={styles.label}>Estado de transacción: <Text style={styles.value}>rechazadaProsa</Text></Text>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>ID de transacción:</Text>
+          <Text style={styles.value}>194402170</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Banco:</Text>
+          <Text style={styles.value}>{bank}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Tipo de tarjeta:</Text>
+          <Text style={styles.value}>{cardType}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Fecha:</Text>
+          <Text style={styles.value}>{date}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Terminal:</Text>
+          <Text style={styles.value}>{terminal}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Propina:</Text>
+          <Text style={styles.value}>$0</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Monto total:</Text>
+          <Text style={styles.value}>{amount}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Tipo de transacción:</Text>
+          <Text style={styles.value}>Venta</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Estado de transacción:</Text>
+          <Text style={styles.value}>rechazadaProsa</Text>
+        </View>
       </View>
     </View>
   );
@@ -34,7 +63,7 @@ export default function DetailsScreen({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D3D3D3', // Color de fondo similar a la imagen
+    backgroundColor: '#D3D3D3',
     padding: 20,
     borderRadius: 20,
     alignItems: 'center',
@@ -45,15 +74,15 @@ const styles = StyleSheet.create({
     top: 20,
     left: 20,
     backgroundColor: '#333',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   amount: {
@@ -64,15 +93,24 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     marginTop: 20,
-    alignItems: 'flex-start',
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 4,
   },
   label: {
     fontSize: 16,
     color: '#333',
-    fontWeight: 'bold', // Para poner en negrita las etiquetas
-    marginVertical: 2,
+    fontWeight: 'bold',
+    flex: 1,
   },
   value: {
-    fontWeight: 'normal', // Para que los valores no estén en negrita
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'right',
+    flex: 1,
   },
 });

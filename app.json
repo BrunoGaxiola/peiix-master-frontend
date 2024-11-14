@@ -7,7 +7,6 @@
     "icon": "./assets/images/peiixlogo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
