@@ -1,11 +1,21 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Button, Modal } from 'react-native';
+import { FilterPopup } from './screens/FilterComponent';
 
 export default function App() {
+  const [modalVisible, setModalVisible] = useState(false);
+
   return (
     <View style={styles.container}>
-      <Text>Hello Peiix!</Text>
-      <StatusBar style="auto" />
+      <Button title="Show Filter" onPress={() => setModalVisible(true)} />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <FilterPopup closeModal={() => setModalVisible(false)} />
+      </Modal>
     </View>
   );
 }
@@ -13,7 +23,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
