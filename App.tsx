@@ -2,27 +2,14 @@ import React from 'react';
 import { FlatList, StyleSheet, ListRenderItem } from 'react-native';
 import DeviceCard from './components/DeviceCard';
 import { devices, Device } from './components/devicesData';
+import DeviceList from './components/DeviceList';
+import ExportButton from './components/ExportButton';
 
-const App = () => {
-  const renderItem: ListRenderItem<Device> = ({ item }) => (
-    <DeviceCard name={item.name} onPress={() => alert(item.name)} />
-  );
-
-  return (
-    <FlatList
-      data={devices}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      contentContainerStyle={styles.container1}
-    />
-  );
+const App: React.FC = () => {
+  return <ExportButton/>;
 };
 
 const styles = StyleSheet.create({
-  container1: {
-    paddingTop: 80,
-    padding: 40,
-  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
