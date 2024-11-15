@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, FlatList, StyleSheet, ListRenderItem } from 'react-native';
-import DeviceCard from './components/terminales';
+import { FlatList, StyleSheet, ListRenderItem } from 'react-native';
+import DeviceCard from './components/DeviceCard';
 import { devices, Device } from './components/devicesData';
 
 const App = () => {

@@ -14,7 +14,6 @@ type DeviceCardProps = {
     return (
       <TouchableOpacity style={styles.card} onPress={onPress}>
         <Text style={styles.name}>{name}</Text>
-            <MaterialIcons  />
                 <View style={styles.iconContainer}>
             <MaterialIcons name="arrow-forward" size={30} color="#d3d3d3" />
       </View>
