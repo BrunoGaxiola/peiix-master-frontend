@@ -7,6 +7,10 @@ import { useState, useEffect } from 'react';
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const [fontsLoaded, setFontsLoaded] = useState(false);
 
+    // Estados para el correo y contraseña.
+    const[email, setEmail] = useState("");
+    const[password, setPassword] = useState("");
+
     useEffect(() => {
         async function loadFonts() {
         await Font.loadAsync({
@@ -39,6 +43,8 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     <TextInput
                         style={styles.textbox}
                         placeholder="Dirección de Correo Electrónico"
+                        value={email}
+                        onChangeText={setEmail}
                     />
                 </View>
                 <View style={styles.formSpaces}>
@@ -46,6 +52,8 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     <TextInput
                         style={styles.textbox}
                         placeholder="Contraseña"
+                        value={password}
+                        onChangeText={setPassword}
                     />
                 </View>
                 <TouchableOpacity
