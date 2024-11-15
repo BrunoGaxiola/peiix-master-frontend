@@ -1,4 +1,5 @@
 // TransaccionesPage.tsx
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,13 +9,16 @@ import {
   Dimensions,
   ActivityIndicator,
   FlatList,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Font from 'expo-font';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import ExportButton from '../components/ExportButton';
-import FilterButton from '../components/FilterButton'; // Import FilterButton
+import FilterButton from '../components/FilterButton';
+import { apiFetch } from '../utils/api'; // Import the apiFetch utility
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Define the type for your navigation stack
 type RootStackParamList = {
@@ -53,16 +57,9 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
   const [data, setData] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
-  // Initial transaction data
-  const initialData: Transaction[] = [...Array(10)].map((_, index) => ({
-    id: index.toString(),
-    amount: '$25',
-    date: '2024-05-14',
-    terminal: 'Test Device 0001',
-    bank: 'BANCOMER',
-    cardType: 'DEBIT',
-  }));
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true); // To track if more data is available
 
   useEffect(() => {
     const loadFontsAndData = async () => {
@@ -74,8 +71,8 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
         });
         setFontsLoaded(true);
 
-        // Set initial data
-        setData(initialData);
+        // Fetch initial data
+        fetchTransactions(1, true);
       } catch (error) {
         console.error('Error loading fonts or data:', error);
       }
@@ -83,21 +80,67 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
     loadFontsAndData();
   }, []);
 
-  const loadMoreData = () => {
-    if (loading) return; // Prevent multiple triggers
+  const fetchTransactions = async (pageNumber: number, initialLoad: boolean = false) => {
+    if (loading) return;
+
     setLoading(true);
-    setTimeout(() => {
-      const moreData: Transaction[] = [...Array(10)].map((_, index) => ({
-        id: (data.length + index).toString(),
-        amount: '$25',
-        date: '2024-05-14',
-        terminal: 'Test Device 0001',
-        bank: 'BANCOMER',
-        cardType: 'DEBIT',
+
+    try {
+      const dateFrom = '2000-01-01 00:00:00'; // Start of the day
+      const dateTo = '2024-11-11 23:59:59'; // End of the day
+
+      const params = {
+        dateFrom,
+        dateTo,
+        size: 20, // Number of transactions per page
+        page: pageNumber,
+      };
+
+      const responseData = await apiFetch('/transactions', {
+        method: 'GET',
+        params,
+      });
+
+      // Extract transactions from responseData.data
+      const fetchedTransactions: Transaction[] = responseData.data.map((item: any) => ({
+        id: item.transaction_id.toString(),
+        amount: `$${item.total_amount.toFixed(2)}`,
+        date: formatDateForDisplay(item.date),
+        terminal: item.device || 'N/A',
+        bank: item.bank || 'N/A',
+        cardType: item.card_brand || 'N/A',
       }));
-      setData((prevData) => [...prevData, ...moreData]);
+
+      if (initialLoad) {
+        setData(fetchedTransactions);
+      } else {
+        setData(prevData => [...prevData, ...fetchedTransactions]);
+      }
+
+      // Update hasMore based on response
+      setHasMore(fetchedTransactions.length === params.size);
+
+      setPage(pageNumber + 1);
+    } catch (error: any) {
+      console.error('Error fetching transactions:', error);
+      Alert.alert('Error', error.message || 'No se pudo cargar las transacciones.');
+    } finally {
       setLoading(false);
-    }, 1500);
+      if (initialLoad) setRefreshing(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setPage(1);
+    setHasMore(true);
+    setData([]);
+    fetchTransactions(1, true);
+  };
+
+  const loadMoreData = () => {
+    if (loading || !hasMore) return;
+    fetchTransactions(page);
   };
 
   const handleCardPress = (item: Transaction) => {
@@ -105,6 +148,7 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
       navigation.navigate('Details', { item });
     } catch (error) {
       console.error('Error navigating to Details:', error);
+      Alert.alert('Error', 'No se pudo navegar a los detalles de la transacción.');
     }
   };
 
@@ -125,6 +169,12 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
       </Text>
     </TouchableOpacity>
   );
+
+  // Helper function to format ISO date to readable format
+  const formatDateForDisplay = (isoDate: string): string => {
+    const date = new Date(isoDate);
+    return date.toLocaleString(); // Adjust as needed for localization
+  };
 
   if (!fontsLoaded) {
     return (
@@ -151,31 +201,41 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
         onEndReached={loadMoreData}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
-          loading ? <ActivityIndicator size="large" color="#0000ff" /> : null
+          loading && hasMore ? <ActivityIndicator size="large" color="#0000ff" /> : null
         }
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          !loading && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No hay transacciones para mostrar.</Text>
+            </View>
+          )
+        }
       />
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 20, // Añadido padding horizontal para márgenes laterales
+    paddingHorizontal: 20, // Added horizontal padding for side margins
     paddingTop: 20,
   },
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20, // Espacio entre los botones y la FlatList
+    marginBottom: 20, // Space between buttons and FlatList
   },
   cardContainer: {
     alignItems: 'center',
-    paddingBottom: 20, // Espacio inferior para el ListFooterComponent
+    paddingBottom: 20, // Space at the bottom for ListFooterComponent
   },
   card: {
-    width: '100%', // Utilizar el 100% del contenedor padre
+    width: '100%', // Use 100% of the parent container
     maxWidth: 800,
     backgroundColor: '#e0e0e0',
     padding: 20,
@@ -193,14 +253,14 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 40,
-    fontFamily: 'MontserratSemiBold', // Usando la fuente semi-bold
+    fontFamily: 'MontserratSemiBold', // Using semi-bold font
     color: '#000',
     textAlign: 'center',
     marginBottom: 10,
   },
   detail: {
     fontSize: 14,
-    fontFamily: 'MontserratRegular', // Usando la fuente regular
+    fontFamily: 'MontserratRegular', // Using regular font
     color: '#333',
     marginVertical: 2,
   },
@@ -212,6 +272,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    fontFamily: 'MontserratRegular',
   },
 });
 
