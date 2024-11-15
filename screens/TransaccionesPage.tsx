@@ -13,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Font from 'expo-font';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+import ExportButton from '../components/ExportButton';
+import FilterButton from '../components/FilterButton'; // Import FilterButton
 
 // Define the type for your navigation stack
 type RootStackParamList = {
@@ -134,6 +136,13 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Contenedor de botones */}
+      <View style={styles.buttonsContainer}>
+        <ExportButton />
+        <FilterButton />
+      </View>
+
+      {/* FlatList de transacciones */}
       <FlatList
         data={data}
         renderItem={renderItem}
@@ -149,23 +158,28 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingVertical: 20,
+    paddingHorizontal: 20, // Añadido padding horizontal para márgenes laterales
+    paddingTop: 20,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20, // Espacio entre los botones y la FlatList
   },
   cardContainer: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingBottom: 20, // Espacio inferior para el ListFooterComponent
   },
   card: {
-    width: '90%',
+    width: '100%', // Utilizar el 100% del contenedor padre
     maxWidth: 800,
     backgroundColor: '#e0e0e0',
     padding: 20,
-    marginVertical: 15,
+    marginVertical: 10,
     borderRadius: 20,
     borderLeftWidth: 5,
     borderBottomWidth: 15,
@@ -179,14 +193,14 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 40,
-    fontFamily: 'MontserratSemiBold', // Using the semi-bold font
+    fontFamily: 'MontserratSemiBold', // Usando la fuente semi-bold
     color: '#000',
     textAlign: 'center',
     marginBottom: 10,
   },
   detail: {
     fontSize: 14,
-    fontFamily: 'MontserratRegular', // Using the regular font
+    fontFamily: 'MontserratRegular', // Usando la fuente regular
     color: '#333',
     marginVertical: 2,
   },
