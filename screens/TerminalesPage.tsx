@@ -2,6 +2,7 @@ import { Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Font from 'expo-font'
 import { useState, useEffect } from 'react';
+import DeviceList from '../components/DeviceList';
 
 // Placeholder para la página de Terminales.
 const TerminalesPage = () => {
@@ -23,7 +24,7 @@ const TerminalesPage = () => {
   }
     return (
         <SafeAreaView style={styles.container}>
-            <Text style={styles.text}>Página de Terminales!</Text>
+            <DeviceList/>
         </SafeAreaView>
     );
 }
