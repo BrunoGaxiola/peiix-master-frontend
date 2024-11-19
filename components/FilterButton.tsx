@@ -1,10 +1,25 @@
 // FilterButton.tsx
+
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import FilterModal from './FilterModal';
 import { Ionicons } from '@expo/vector-icons';
 
-const FilterButton: React.FC = () => {
+// Importar el tipo Filters para tipado
+interface Filters {
+  cardType?: string;
+  bank?: string;
+  transactionStatus?: string;
+  startDate?: string; // Formato: YYYY-MM-DD
+  endDate?: string;   // Formato: YYYY-MM-DD
+}
+
+// Definir las props que recibirá FilterButton
+interface FilterButtonProps {
+  onApplyFilters: (filters: Filters) => void;
+}
+
+const FilterButton: React.FC<FilterButtonProps> = ({ onApplyFilters }) => {
   const [isModalVisible, setModalVisible] = useState(false);
 
   const openModal = () => {
@@ -17,12 +32,13 @@ const FilterButton: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Custom Styled Button */}
+      {/* Botón personalizado */}
       <TouchableOpacity style={styles.filterButton} onPress={openModal}>
         <Text style={styles.filterButtonText}>Filtrar</Text>
         <Ionicons name="filter" size={18} color="black" />
       </TouchableOpacity>
-      <FilterModal visible={isModalVisible} onClose={closeModal} />
+      {/* Pasar la función onApplyFilters al FilterModal */}
+      <FilterModal visible={isModalVisible} onClose={closeModal} onApplyFilters={onApplyFilters} />
     </View>
   );
 };

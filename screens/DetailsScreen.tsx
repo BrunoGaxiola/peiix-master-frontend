@@ -34,17 +34,33 @@ type Props = {
 
 // Define the Transaction type
 interface Transaction {
-  id: string;
-  amount: string;
-  date: string;
-  terminal: string;
+  transaction_id: number;
+  authorization_number: string;
   bank: string;
-  cardType: string;
+  card_brand: string;
+  card_type: string;
+  capture_method: string;
+  commission: number;
+  countercharged: boolean;
+  date: string;
+  details: string;
+  device: string;
+  error_detail: string;
+  masked_card: string;
+  msi: string | null;
+  retention: number;
+  rejection_code: string;
+  subtotal: number;
+  surcharge: number;
+  tip: number;
+  total_amount: number;
+  transaction_type: string;
+  transaction_status: string;
 }
 
 const DetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { item } = route.params;
-  const { amount, date, terminal, bank, cardType } = item;
+  const { total_amount, date, device, bank, card_brand } = item;
 
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
 
@@ -63,6 +79,12 @@ const DetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     loadFonts();
   }, []);
 
+  // Función auxiliar para formatear la fecha
+  const formatDateForDisplay = (isoDate: string): string => {
+    const dateObj = new Date(isoDate);
+    return dateObj.toLocaleString(); // Puedes ajustar el formato según tus necesidades
+  };
+
   if (!fontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
@@ -79,46 +101,47 @@ const DetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       </TouchableOpacity>
 
       {/* Monto grande */}
-      <Text style={styles.largeAmount}>{amount}</Text>
+      <Text style={styles.largeAmount}>{`$${item.total_amount.toFixed(2)}`}</Text>
 
       {/* Contenedor de detalles */}
       <View style={styles.detailsContainer}>
         <View style={styles.detailRow}>
           <Text style={styles.label}>ID de transacción:</Text>
-          <Text style={styles.value}>{item.id}</Text>
+          <Text style={styles.value}>{item.transaction_id}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Banco:</Text>
-          <Text style={styles.value}>{bank}</Text>
+          <Text style={styles.value}>{item.bank || 'N/A'}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Tipo de tarjeta:</Text>
-          <Text style={styles.value}>{cardType}</Text>
+          <Text style={styles.value}>{item.card_brand || 'N/A'}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Fecha:</Text>
-          <Text style={styles.value}>{date}</Text>
+          <Text style={styles.value}>{formatDateForDisplay(item.date)}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Terminal:</Text>
-          <Text style={styles.value}>{terminal}</Text>
+          <Text style={styles.value}>{item.device || 'N/A'}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Propina:</Text>
-          <Text style={styles.value}>$0</Text>
+          <Text style={styles.value}>{`$${item.tip.toFixed(2)}`}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Monto total:</Text>
-          <Text style={styles.value}>{amount}</Text>
+          <Text style={styles.value}>{`$${item.total_amount.toFixed(2)}`}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Tipo de transacción:</Text>
-          <Text style={styles.value}>Venta</Text>
+          <Text style={styles.value}>{item.transaction_type || 'N/A'}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Estado de transacción:</Text>
-          <Text style={styles.value}>rechazadaProsa</Text>
+          <Text style={styles.value}>{item.transaction_status || 'N/A'}</Text>
         </View>
+        {/* Puedes agregar más campos aquí si lo deseas */}
       </View>
     </View>
   );
@@ -135,8 +158,8 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 40, // Adjusted for better positioning
-    right: 20, // Changed to right for better UX
+    top: 40, // Ajustado para mejor posicionamiento
+    right: 20, // Cambiado a right para mejor UX
     backgroundColor: '#333',
     width: 40,
     height: 40,
@@ -148,11 +171,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
-    fontFamily: 'MontserratSemiBold', // Using the semi-bold font
+    fontFamily: 'MontserratSemiBold', // Usando la fuente semi-bold
   },
   largeAmount: {
-    fontSize: 60, // Adjusted for better display
-    fontFamily: 'MontserratSemiBold', // Using the semi-bold font
+    fontSize: 60, // Ajustado para mejor visualización
+    fontFamily: 'MontserratSemiBold', // Usando la fuente semi-bold
     color: '#000',
     marginTop: 80,
     textAlign: 'center',
@@ -170,7 +193,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: 'bold',
-    fontFamily: 'MontserratRegular', // Using the regular font
+    fontFamily: 'MontserratRegular', // Usando la fuente regular
     flex: 1,
   },
   value: {
@@ -178,7 +201,7 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'right',
     flex: 1,
-    fontFamily: 'MontserratRegular', // Using the regular font
+    fontFamily: 'MontserratRegular', // Usando la fuente regular
   },
   loadingContainer: {
     flex: 1,

@@ -1,4 +1,5 @@
 // FilterModal.tsx
+
 import React, { useState } from 'react';
 import {
   Modal,
@@ -9,40 +10,47 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons } from '@expo/vector-icons';
 
+// Definir la interfaz Filters acorde a los requisitos
+interface Filters {
+  bank?: string;
+  card_type?: string;
+  transaction_status?: string;
+  dateFrom?: string; // Formato: YYYY-MM-DD
+  dateTo?: string;   // Formato: YYYY-MM-DD
+}
+
 interface FilterModalProps {
   visible: boolean;
   onClose: () => void;
-  onApplyFilters: (filters: Filters) => void;
+  onApplyFilters: (filters: Filters) => void; // Añadido
 }
 
-interface Filters {
-  cardType?: string;
-  bank?: string;
-  transactionStatus?: string;
-  startDate?: string; // Format: YYYY-MM-DD
-  endDate?: string;   // Format: YYYY-MM-DD
-}
+// ... (importaciones y definiciones previas)
 
 const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilters }) => {
-  const [cardType, setCardType] = useState<string | null>(null);
-  const [bank, setBank] = useState<string | null>(null);
-  const [transactionStatus, setTransactionStatus] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState<{ day: string | null; month: string | null; year: string | null }>({
+  // Estados para los filtros obligatorios
+  const [dateFrom, setDateFrom] = useState<{ day: string | null; month: string | null; year: string | null }>({
     day: null,
     month: null,
     year: null,
   });
-  const [endDate, setEndDate] = useState<{ day: string | null; month: string | null; year: string | null }>({
+  const [dateTo, setDateTo] = useState<{ day: string | null; month: string | null; year: string | null }>({
     day: null,
     month: null,
     year: null,
   });
 
-  // Combine date parts into a single string
+  // Estados para los filtros opcionales
+  const [bank, setBank] = useState<string | null>(null);
+  const [cardType, setCardType] = useState<string | null>(null);
+  const [transactionStatus, setTransactionStatus] = useState<string | null>(null);
+
+  // Función para formatear las fechas
   const formatDate = (date: { day: string | null; month: string | null; year: string | null }): string | null => {
     if (date.day && date.month && date.year) {
       const day = date.day.padStart(2, '0');
@@ -52,21 +60,52 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
     return null;
   };
 
+  // Función para manejar la aplicación de filtros
   const handleApplyFilters = () => {
-    const filters: Filters = {};
+    const formattedDateFrom = formatDate(dateFrom);
+    const formattedDateTo = formatDate(dateTo);
 
-    if (cardType) filters.cardType = cardType;
-    if (bank) filters.bank = bank;
-    if (transactionStatus) filters.transactionStatus = transactionStatus;
+    // Validaciones de fechas
+    if (!formattedDateFrom || !formattedDateTo) {
+      Alert.alert('Error de Fecha', 'Por favor, selecciona ambas fechas de inicio y fin.');
+      return;
+    }
 
-    const formattedStartDate = formatDate(startDate);
-    const formattedEndDate = formatDate(endDate);
+    const start = new Date(formattedDateFrom);
+    const end = new Date(formattedDateTo);
+    if (start > end) {
+      Alert.alert('Error de Fecha', 'La fecha de inicio no puede ser posterior a la fecha de fin.');
+      return;
+    }
 
-    if (formattedStartDate) filters.startDate = formattedStartDate;
-    if (formattedEndDate) filters.endDate = formattedEndDate;
+    // Construir el objeto de filtros dinámicamente
+    const allFilters: Filters = {
+      dateFrom: formattedDateFrom,
+      dateTo: formattedDateTo,
+      bank: bank || undefined,
+      card_type: cardType || undefined,
+      transaction_status: transactionStatus || undefined,
+    };
 
-    onApplyFilters(filters);
-    onClose();
+    // Remover campos que son undefined, null o cadenas vacías
+    const filters: Filters = Object.entries(allFilters)
+      .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+      .reduce((obj, [key, value]) => {
+        obj[key as keyof Filters] = value;
+        return obj;
+      }, {} as Filters);
+
+    onApplyFilters(filters); // Llamar a la función pasada desde TransaccionesPage
+    onClose(); // Cerrar el modal
+  };
+
+  // Función para limpiar todos los filtros
+  const handleClearFilters = () => {
+    setDateFrom({ day: null, month: null, year: null });
+    setDateTo({ day: null, month: null, year: null });
+    setBank(null);
+    setCardType(null);
+    setTransactionStatus(null);
   };
 
   return (
@@ -81,7 +120,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.modalView}>
-          {/* Header with Close Button */}
+          {/* Header con botón de cerrar */}
           <View style={styles.header}>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <Ionicons name="close" size={30} color="white" />
@@ -89,7 +128,120 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
           </View>
 
           <ScrollView contentContainerStyle={styles.scrollContainer}>
-            {/* Card Type Filter */}
+            {/* Filtro de Fecha Desde */}
+            <Text style={styles.title}>Fecha Desde</Text>
+            <View style={styles.dateRangeContainer}>
+              {/* Día */}
+              <View style={styles.datePicker}>
+                <RNPickerSelect
+                  onValueChange={(value) => setDateFrom((prev) => ({ ...prev, day: value }))}
+                  items={[...Array(31).keys()].map((i) => ({ label: `${i + 1}`, value: `${i + 1}` }))}
+                  style={pickerSelectStyles}
+                  placeholder={{ label: 'DD', value: null }}
+                  useNativeAndroidPickerStyle={false}
+                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
+                  value={dateFrom.day} // Añadido
+                />
+              </View>
+              <Text style={styles.separator}>/</Text>
+              {/* Mes */}
+              <View style={styles.datePicker}>
+                <RNPickerSelect
+                  onValueChange={(value) => setDateFrom((prev) => ({ ...prev, month: value }))}
+                  items={[...Array(12).keys()].map((i) => ({ label: `${i + 1}`, value: `${i + 1}` }))}
+                  style={pickerSelectStyles}
+                  placeholder={{ label: 'MM', value: null }}
+                  useNativeAndroidPickerStyle={false}
+                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
+                  value={dateFrom.month} // Añadido
+                />
+              </View>
+              <Text style={styles.separator}>/</Text>
+              {/* Año */}
+              <View style={styles.datePicker}>
+                <RNPickerSelect
+                  onValueChange={(value) => setDateFrom((prev) => ({ ...prev, year: value }))}
+                  items={[...Array(30).keys()].map((i) => ({
+                    label: `${2020 + i}`, // Ajusta según necesites
+                    value: `${2020 + i}`,
+                  }))}
+                  style={pickerSelectStyles}
+                  placeholder={{ label: 'YYYY', value: null }}
+                  useNativeAndroidPickerStyle={false}
+                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
+                  value={dateFrom.year} // Añadido
+                />
+              </View>
+            </View>
+
+            {/* Filtro de Fecha Hasta */}
+            <Text style={styles.title}>Fecha Hasta</Text>
+            <View style={styles.dateRangeContainer}>
+              {/* Día */}
+              <View style={styles.datePicker}>
+                <RNPickerSelect
+                  onValueChange={(value) => setDateTo((prev) => ({ ...prev, day: value }))}
+                  items={[...Array(31).keys()].map((i) => ({ label: `${i + 1}`, value: `${i + 1}` }))}
+                  style={pickerSelectStyles}
+                  placeholder={{ label: 'DD', value: null }}
+                  useNativeAndroidPickerStyle={false}
+                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
+                  value={dateTo.day} // Añadido
+                />
+              </View>
+              <Text style={styles.separator}>/</Text>
+              {/* Mes */}
+              <View style={styles.datePicker}>
+                <RNPickerSelect
+                  onValueChange={(value) => setDateTo((prev) => ({ ...prev, month: value }))}
+                  items={[...Array(12).keys()].map((i) => ({ label: `${i + 1}`, value: `${i + 1}` }))}
+                  style={pickerSelectStyles}
+                  placeholder={{ label: 'MM', value: null }}
+                  useNativeAndroidPickerStyle={false}
+                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
+                  value={dateTo.month} // Añadido
+                />
+              </View>
+              <Text style={styles.separator}>/</Text>
+              {/* Año */}
+              <View style={styles.datePicker}>
+                <RNPickerSelect
+                  onValueChange={(value) => setDateTo((prev) => ({ ...prev, year: value }))}
+                  items={[...Array(30).keys()].map((i) => ({
+                    label: `${2020 + i}`, // Ajusta según necesites
+                    value: `${2020 + i}`,
+                  }))}
+                  style={pickerSelectStyles}
+                  placeholder={{ label: 'YYYY', value: null }}
+                  useNativeAndroidPickerStyle={false}
+                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
+                  value={dateTo.year} // Añadido
+                />
+              </View>
+            </View>
+
+            {/* Filtro de Bank */}
+            <Text style={styles.title}>Banco</Text>
+            <View style={styles.pickerContainer}>
+              <RNPickerSelect
+                onValueChange={(value) => setBank(value)}
+                items={[
+                  { label: 'NU MEXICO FINANCIERA', value: 'NU MEXICO FINANCIERA' },
+                  { label: 'BANCOMER', value: 'BANCOMER' },
+                  { label: 'REGIGOLD', value: 'REGIGOLD' },
+                  { label: 'TARJETAS DEL FUTURO', value: 'TARJETAS DEL FUTURO' },
+                  // { label: 'N/A', value: 'null' },
+                  // Añadir más bancos según sea necesario
+                ]}
+                style={pickerSelectStyles}
+                placeholder={{ label: 'Selecciona Banco', value: null }}
+                useNativeAndroidPickerStyle={false}
+                Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
+                value={bank} // Añadido
+              />
+            </View>
+
+            {/* Filtro de Tipo de Tarjeta */}
             <Text style={styles.title}>Tipo de Tarjeta</Text>
             <View style={styles.pickerContainer}>
               <RNPickerSelect
@@ -97,148 +249,62 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
                 items={[
                   { label: 'Débito', value: 'DEBIT' },
                   { label: 'Crédito', value: 'CREDIT' },
+                  // { label: 'N/A', value: 'null' },
                 ]}
                 style={pickerSelectStyles}
                 placeholder={{ label: 'Selecciona Tipo de Tarjeta', value: null }}
                 useNativeAndroidPickerStyle={false}
                 Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
+                value={cardType} // Añadido
               />
             </View>
 
-            {/* Bank Filter */}
-            <Text style={styles.title}>Banco Emisor</Text>
-            <View style={styles.pickerContainer}>
-              <RNPickerSelect
-                onValueChange={(value) => setBank(value)}
-                items={[
-                  { label: 'BANCOMER', value: 'BANCOMER' },
-                  { label: 'BANAMEX', value: 'BANAMEX' },
-                  { label: 'HSBC', value: 'HSBC' },
-                  // Add more banks as needed
-                ]}
-                style={pickerSelectStyles}
-                placeholder={{ label: 'Selecciona Banco Emisor', value: null }}
-                useNativeAndroidPickerStyle={false}
-                Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
-              />
-            </View>
-
-            {/* Transaction Status Filter */}
+            {/* Filtro de Estado de la Transacción */}
             <Text style={styles.title}>Estado de la Transacción</Text>
             <View style={styles.pickerContainer}>
               <RNPickerSelect
                 onValueChange={(value) => setTransactionStatus(value)}
                 items={[
-                  { label: 'Completada', value: 'COMPLETED' },
-                  { label: 'Pendiente', value: 'PENDING' },
-                  { label: 'Cancelada', value: 'CANCELLED' },
+                  { label: 'Aprobada', value: 'aprobada' },
+                  { label: 'Rechazada por Riesgo', value: 'rechazadaRiesgo' },
+                  { label: 'Rechazada por Prosa', value: 'rechazadaProsa' },
+                  // Añadir más estados según sea necesario
                 ]}
                 style={pickerSelectStyles}
                 placeholder={{ label: 'Selecciona Estado', value: null }}
                 useNativeAndroidPickerStyle={false}
                 Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
+                value={transactionStatus} // Añadido
               />
             </View>
 
-            {/* Date Range Filter */}
-            <Text style={styles.title}>Rango de Fechas</Text>
-            <View style={styles.dateRangeContainer}>
-              {/* Start Date */}
-              <View style={styles.datePicker}>
-                <RNPickerSelect
-                  onValueChange={(value) => setStartDate((prev) => ({ ...prev, day: value }))}
-                  items={[...Array(31).keys()].map((i) => ({ label: `${i + 1}`, value: `${i + 1}` }))}
-                  style={pickerSelectStyles}
-                  placeholder={{ label: 'DD', value: null }}
-                  useNativeAndroidPickerStyle={false}
-                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
-                />
-              </View>
-              <Text style={styles.separator}>/</Text>
-              <View style={styles.datePicker}>
-                <RNPickerSelect
-                  onValueChange={(value) => setStartDate((prev) => ({ ...prev, month: value }))}
-                  items={[...Array(12).keys()].map((i) => ({ label: `${i + 1}`, value: `${i + 1}` }))}
-                  style={pickerSelectStyles}
-                  placeholder={{ label: 'MM', value: null }}
-                  useNativeAndroidPickerStyle={false}
-                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
-                />
-              </View>
-              <Text style={styles.separator}>/</Text>
-              <View style={styles.datePicker}>
-                <RNPickerSelect
-                  onValueChange={(value) => setStartDate((prev) => ({ ...prev, year: value }))}
-                  items={[...Array(100).keys()].map((i) => ({
-                    label: `${2023 - i}`,
-                    value: `${2023 - i}`,
-                  }))}
-                  style={pickerSelectStyles}
-                  placeholder={{ label: 'YYYY', value: null }}
-                  useNativeAndroidPickerStyle={false}
-                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
-                />
-              </View>
-            </View>
+            {/* Botón para limpiar todos los filtros */}
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={handleClearFilters}
+            >
+              <Text style={styles.clearButtonText}>Limpiar Filtros</Text>
+              <Ionicons name="trash" size={20} color="white" style={styles.clearIcon} />
+            </TouchableOpacity>
 
-            <Text style={styles.toText}>a</Text>
-
-            <View style={styles.dateRangeContainer}>
-              {/* End Date */}
-              <View style={styles.datePicker}>
-                <RNPickerSelect
-                  onValueChange={(value) => setEndDate((prev) => ({ ...prev, day: value }))}
-                  items={[...Array(31).keys()].map((i) => ({ label: `${i + 1}`, value: `${i + 1}` }))}
-                  style={pickerSelectStyles}
-                  placeholder={{ label: 'DD', value: null }}
-                  useNativeAndroidPickerStyle={false}
-                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
-                />
-              </View>
-              <Text style={styles.separator}>/</Text>
-              <View style={styles.datePicker}>
-                <RNPickerSelect
-                  onValueChange={(value) => setEndDate((prev) => ({ ...prev, month: value }))}
-                  items={[...Array(12).keys()].map((i) => ({ label: `${i + 1}`, value: `${i + 1}` }))}
-                  style={pickerSelectStyles}
-                  placeholder={{ label: 'MM', value: null }}
-                  useNativeAndroidPickerStyle={false}
-                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
-                />
-              </View>
-              <Text style={styles.separator}>/</Text>
-              <View style={styles.datePicker}>
-                <RNPickerSelect
-                  onValueChange={(value) => setEndDate((prev) => ({ ...prev, year: value }))}
-                  items={[...Array(100).keys()].map((i) => ({
-                    label: `${2023 - i}`,
-                    value: `${2023 - i}`,
-                  }))}
-                  style={pickerSelectStyles}
-                  placeholder={{ label: 'YYYY', value: null }}
-                  useNativeAndroidPickerStyle={false}
-                  Icon={() => <Ionicons name="chevron-down" size={20} color="black" />}
-                />
-              </View>
-            </View>
-
-            {/* Apply Filters Button */}
+            {/* Botón para aplicar filtros */}
             <TouchableOpacity
               style={[
                 styles.filterButton,
                 {
                   backgroundColor:
-                    cardType || bank || transactionStatus || (formatDate(startDate) && formatDate(endDate))
+                    dateFrom.day && dateFrom.month && dateFrom.year &&
+                    dateTo.day && dateTo.month && dateTo.year
                       ? '#4CAF50'
                       : '#a0c4f4',
                 },
               ]}
               onPress={handleApplyFilters}
               disabled={
-                !cardType &&
-                !bank &&
-                !transactionStatus &&
-                !(formatDate(startDate) && formatDate(endDate))
+                !(
+                  dateFrom.day && dateFrom.month && dateFrom.year &&
+                  dateTo.day && dateTo.month && dateTo.year
+                )
               }
             >
               <Text style={styles.filterButtonText}>Filtrar</Text>
@@ -253,7 +319,10 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
 
 export default FilterModal;
 
-// Styles
+// ... (estilos permanecen igual)
+
+
+// Estilos
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -281,7 +350,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     paddingBottom: 20,
   },
   title: {
@@ -307,21 +376,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     alignSelf: 'center',
   },
-  toText: {
-    textAlign: 'center',
-    fontSize: 18,
-    marginVertical: 10,
-  },
   filterButton: {
     backgroundColor: '#4CAF50',
     borderRadius: 10,
-    flexDirection: 'row', // Align text and icon in the same row
+    flexDirection: 'row', // Alinear texto e icono en la misma fila
     justifyContent: 'center',
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 20,
     width: '60%',
-    alignSelf: 'center', // Center the button horizontally
+    alignSelf: 'center', // Centrar el botón horizontalmente
   },
   filterButtonText: {
     color: '#fff',
@@ -332,9 +396,29 @@ const styles = StyleSheet.create({
   filterIcon: {
     color: 'white',
   },
+  clearButton: {
+    backgroundColor: '#f44336',
+    borderRadius: 10,
+    flexDirection: 'row', // Alinear texto e icono en la misma fila
+    justifyContent: 'center',
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: 10,
+    width: '60%',
+    alignSelf: 'center', // Centrar el botón horizontalmente
+  },
+  clearButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    marginRight: 5,
+    fontSize: 16,
+  },
+  clearIcon: {
+    color: 'white',
+  },
 });
 
-// Picker Select Styles
+// Estilos para RNPickerSelect
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     backgroundColor: '#fff',
@@ -342,8 +426,8 @@ const pickerSelectStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 15,
     textAlign: 'center',
-    color: '#000', // Visible text color
-    paddingRight: 30, // To ensure the text is not behind the icon
+    color: '#000', // Color de texto visible
+    paddingRight: 30, // Asegurar que el texto no quede detrás del icono
   },
   inputAndroid: {
     backgroundColor: '#fff',
@@ -351,14 +435,14 @@ const pickerSelectStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     textAlign: 'center',
-    color: '#000', // Visible text color
-    paddingRight: 30, // To ensure the text is not behind the icon
+    color: '#000', // Color de texto visible
+    paddingRight: 30, // Asegurar que el texto no quede detrás del icono
   },
   iconContainer: {
     top: '50%',
     right: 10,
   },
   placeholder: {
-    color: '#aaa', // Placeholder text color
+    color: '#aaa', // Color de texto del placeholder
   },
 });

@@ -43,47 +43,32 @@ type Props = {
 
 // Define the Transaction type
 interface Transaction {
-  transaction_id: number;
-  authorization_number: string;
-  bank: string;
-  card_brand: string;
-  card_type: string;
-  capture_method: string;
-  commission: number;
-  countercharged: boolean;
+  id: string;
+  amount: string;
   date: string;
-  details: string;
-  device: string;
-  error_detail: string;
-  masked_card: string;
-  msi: string | null;
-  retention: number;
-  rejection_code: string;
-  subtotal: number;
-  surcharge: number;
-  tip: number;
-  total_amount: number;
-  transaction_type: string;
-  transaction_status: string;
+  terminal: string;
+  bank: string;
+  cardType: string;
 }
 
-// Define the Filters type acorde a los requisitos
+// Define the Filters type
 interface Filters {
+  cardType?: string;
   bank?: string;
-  card_type?: string;
-  transaction_status?: string;
-  dateFrom?: string; // Formato: YYYY-MM-DD
-  dateTo?: string;   // Formato: YYYY-MM-DD
+  transactionStatus?: string;
+  startDate?: string; // Format: YYYY-MM-DD
+  endDate?: string;   // Format: YYYY-MM-DD
 }
 
 const { width } = Dimensions.get('window');
 
 const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
-  const [allData, setAllData] = useState<Transaction[]>([]); // Almacena todas las transacciones
-  const [filteredData, setFilteredData] = useState<Transaction[]>([]); // Almacena las transacciones filtradas
+  const [data, setData] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const [filters, setFilters] = useState<Filters>({}); // Estado para los filtros
 
   useEffect(() => {
@@ -96,8 +81,8 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
         });
         setFontsLoaded(true);
 
-        // Obtener todas las transacciones
-        fetchAllTransactions();
+        // Obtener datos iniciales
+        fetchTransactions(1, true, filters);
       } catch (error) {
         console.error('Error loading fonts or data:', error);
       }
@@ -105,20 +90,52 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
     loadFontsAndData();
   }, []);
 
-  // Función para obtener todas las transacciones
-  const fetchAllTransactions = async () => {
+  // Función para manejar la aplicación de filtros
+  const handleApplyFilters = (newFilters: Filters) => {
+    setFilters(newFilters);
+    setPage(1);
+    setHasMore(true);
+    setData([]);
+    fetchTransactions(1, true, newFilters);
+  };
+
+  // Función para obtener las transacciones, ahora acepta filtros
+  const fetchTransactions = async (pageNumber: number, initialLoad: boolean = false, appliedFilters: Filters = {}) => {
     if (loading) return;
 
     setLoading(true);
 
     try {
+      let dateFrom = '2000-01-01 00:00:00';
+      let dateTo = '2024-11-11 23:59:59';
+
+      // Si se han aplicado filtros de fecha, usarlos
+      if (appliedFilters.startDate && appliedFilters.endDate) {
+        dateFrom = `${appliedFilters.startDate} 00:00:00`;
+        dateTo = `${appliedFilters.endDate} 23:59:59`;
+      }
+
       const params: any = {
-        
-        dateFrom: '2000-01-01 00:00:00', // Fecha mínima
-        dateTo: '2024-11-11 23:59:59',   // Fecha máxima para incluir 2024
-        size: 100, // Asignar un tamaño suficientemente grande para obtener todas las transacciones
-        page: 1,    // Iniciar en la primera página
+        dateFrom,
+        dateTo,
+        size: 20, // Número de transacciones por página
+        page: pageNumber,
       };
+
+      // Incluir filtros opcionales
+      if (appliedFilters.cardType) {
+        params.card = appliedFilters.cardType;
+      }
+
+      if (appliedFilters.bank) {
+        params.device = appliedFilters.bank; // Asumiendo que 'device' corresponde al banco
+      }
+
+      if (appliedFilters.transactionStatus) {
+        params.transactionStatus = appliedFilters.transactionStatus;
+      }
+
+      // Puedes añadir más filtros según sea necesario
 
       const responseData = await apiFetch('/transactions', {
         method: 'GET',
@@ -127,77 +144,44 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
 
       // Mapear los datos de la respuesta al tipo Transaction
       const fetchedTransactions: Transaction[] = responseData.data.map((item: any) => ({
-        transaction_id: item.transaction_id,
-        authorization_number: item.authorization_number,
-        bank: item.bank,
-        card_brand: item.card_brand,
-        card_type: item.card_type,
-        capture_method: item.capture_method,
-        commission: item.commission,
-        countercharged: item.countercharged,
-        date: item.date,
-        details: item.details,
-        device: item.device,
-        error_detail: item.error_detail,
-        masked_card: item.masked_card,
-        msi: item.msi,
-        retention: item.retention,
-        rejection_code: item.rejection_code,
-        subtotal: item.subtotal,
-        surcharge: item.surcharge,
-        tip: item.tip,
-        total_amount: item.total_amount,
-        transaction_type: item.transaction_type,
-        transaction_status: item.transaction_status,
+        id: item.transaction_id.toString(),
+        amount: `$${item.total_amount.toFixed(2)}`,
+        date: formatDateForDisplay(item.date),
+        terminal: item.device || 'N/A',
+        bank: item.bank || 'N/A',
+        cardType: item.card_brand || 'N/A',
       }));
 
-      setAllData(fetchedTransactions);
-      setFilteredData(fetchedTransactions);
+      if (initialLoad) {
+        setData(fetchedTransactions);
+      } else {
+        setData(prevData => [...prevData, ...fetchedTransactions]);
+      }
+
+      // Actualizar si hay más datos para cargar
+      setHasMore(fetchedTransactions.length === params.size);
+
+      setPage(pageNumber + 1);
     } catch (error: any) {
       console.error('Error fetching transactions:', error);
       Alert.alert('Error', error.message || 'No se pudo cargar las transacciones.');
     } finally {
       setLoading(false);
-      setRefreshing(false);
+      if (initialLoad) setRefreshing(false);
     }
-  };
-
-  // Función para manejar la aplicación de filtros
-  const handleApplyFilters = (newFilters: Filters) => {
-    setFilters(newFilters);
-    applyFilters(newFilters);
-  };
-
-  // Función para aplicar filtros localmente
-  const applyFilters = (filters: Filters) => {
-    const { bank, card_type, transaction_status, dateFrom, dateTo } = filters;
-
-    const filtered = allData.filter((transaction) => {
-      // Filtrar por bank
-      const bankMatch = bank ? transaction.bank === bank : true;
-
-      // Filtrar por card_type
-      const cardTypeMatch = card_type ? transaction.card_type === card_type : true;
-
-      // Filtrar por transaction_status
-      const transactionStatusMatch = transaction_status ? transaction.transaction_status === transaction_status : true;
-
-      // Filtrar por rango de fechas
-      const transactionDate = new Date(transaction.date);
-      const fromDate = dateFrom ? new Date(dateFrom) : new Date('2000-01-01T00:00:00');
-      const toDate = dateTo ? new Date(dateTo) : new Date('2024-12-31T23:59:59');
-
-      const dateMatch = transactionDate >= fromDate && transactionDate <= toDate;
-
-      return bankMatch && cardTypeMatch && transactionStatusMatch && dateMatch;
-    });
-
-    setFilteredData(filtered);
   };
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchAllTransactions();
+    setPage(1);
+    setHasMore(true);
+    setData([]);
+    fetchTransactions(1, true, filters);
+  };
+
+  const loadMoreData = () => {
+    if (loading || !hasMore) return;
+    fetchTransactions(page, false, filters);
   };
 
   const handleCardPress = (item: Transaction) => {
@@ -211,21 +195,18 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
 
   const renderItem = ({ item }: { item: Transaction }) => (
     <TouchableOpacity style={styles.card} onPress={() => handleCardPress(item)}>
-      <Text style={styles.amount}>{`$${item.total_amount.toFixed(2)}`}</Text>
+      <Text style={styles.amount}>{item.amount}</Text>
       <Text style={styles.detail}>
-        <Text style={styles.bold}>Fecha:</Text> {formatDateForDisplay(item.date)}
+        <Text style={styles.bold}>Fecha:</Text> {item.date}
       </Text>
       <Text style={styles.detail}>
-        <Text style={styles.bold}>Terminal:</Text> {item.device || 'N/A'}
+        <Text style={styles.bold}>Terminal:</Text> {item.terminal}
       </Text>
       <Text style={styles.detail}>
-        <Text style={styles.bold}>Banco:</Text> {item.bank || 'N/A'}
+        <Text style={styles.bold}>Banco:</Text> {item.bank}
       </Text>
       <Text style={styles.detail}>
-        <Text style={styles.bold}>Tarjeta:</Text> {item.masked_card || 'N/A'}
-      </Text>
-      <Text style={styles.detail}>
-        <Text style={styles.bold}>Estado:</Text> {item.transaction_status || 'N/A'}
+        <Text style={styles.bold}>Tarjeta:</Text> {item.cardType}
       </Text>
     </TouchableOpacity>
   );
@@ -255,10 +236,15 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
 
       {/* FlatList de transacciones */}
       <FlatList
-        data={filteredData}
+        data={data}
         renderItem={renderItem}
-        keyExtractor={(item) => item.transaction_id.toString()}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.cardContainer}
+        onEndReached={loadMoreData}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loading && hasMore ? <ActivityIndicator size="large" color="#0000ff" /> : null
+        }
         refreshing={refreshing}
         onRefresh={handleRefresh}
         showsVerticalScrollIndicator={false}
@@ -287,12 +273,12 @@ const styles = StyleSheet.create({
     marginBottom: 20, // Espacio entre botones y FlatList
   },
   cardContainer: {
-    alignItems: 'center', // Centrar las cards
+    alignItems: 'center',
     paddingBottom: 20, // Espacio al final para ListFooterComponent
   },
-  
   card: {
-    width: '80%', // Establecer el ancho al 80% del contenedor
+    width: '100%', // Usar 100% del contenedor padre
+    maxWidth: 800,
     backgroundColor: '#e0e0e0',
     padding: 20,
     marginVertical: 10,
@@ -307,7 +293,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 10,
   },
-  
   amount: {
     fontSize: 40,
     fontFamily: 'MontserratSemiBold', // Usar fuente semi-bold

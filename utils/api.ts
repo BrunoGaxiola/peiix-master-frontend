@@ -10,6 +10,8 @@ interface FetchOptions {
   params?: any;
 }
 
+type ResponseType = 'json' | 'blob' | 'text';
+
 const getAuthHeaders = async () => {
   const accessToken = await AsyncStorage.getItem('ACCESS_TOKEN');
   const bpToken = await AsyncStorage.getItem('BP_TOKEN');
@@ -21,8 +23,12 @@ const getAuthHeaders = async () => {
   };
 };
 
-export const apiFetch = async (endpoint: string, options: FetchOptions = {}) => {
-  const url = new URL(`${API_BASE_URL}${endpoint}`);
+export const apiFetch = async (
+  endpoint: string,
+  options: FetchOptions = {},
+  responseType: ResponseType = 'json'
+) => {
+  const url = new URL(`http://10.41.50.48:5000${endpoint}`);
 
   // Append query parameters if any
   if (options.params) {
@@ -47,12 +53,26 @@ export const apiFetch = async (endpoint: string, options: FetchOptions = {}) => 
   try {
     const response = await fetch(url.toString(), fetchOptions);
 
-    const data = await response.json();
+    let data;
 
-    if (!response.ok) {
-      // Adjust based on your backend error response structure
-      const errorMessage = data.message || data.error || 'Error en la petición';
-      throw new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+    if (responseType === 'json') {
+      data = await response.json();
+      if (!response.ok) {
+        const errorMessage = data.message || data.error || 'Error en la petición';
+        throw new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+      }
+    } else if (responseType === 'blob') {
+      data = await response.blob();
+      if (!response.ok) {
+        // Intentar obtener el mensaje de error del blob si es posible
+        const errorText = await response.text();
+        throw new Error(errorText || 'Error al descargar el archivo.');
+      }
+    } else if (responseType === 'text') {
+      data = await response.text();
+      if (!response.ok) {
+        throw new Error(data || 'Error en la petición.');
+      }
     }
 
     return data;
