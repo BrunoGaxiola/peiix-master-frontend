@@ -1,17 +1,23 @@
+// DeviceList.tsx
+
 import React from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import DeviceCard from './DeviceCard';
-import { Device, devices } from './devicesData';
 
-const DeviceList: React.FC = () => {
-  const renderItem = ({ item }: { item: Device }) => (
-    <DeviceCard name={item.name} onPress={() => alert(item.name)} />
+interface DeviceListProps {
+  devices: string[];
+  onDevicePress: (deviceName: string) => void;
+}
+
+const DeviceList: React.FC<DeviceListProps> = ({ devices, onDevicePress }) => {
+  const renderItem = ({ item }: { item: string }) => (
+    <DeviceCard name={item} onPress={() => onDevicePress(item)} />
   );
 
   return (
     <FlatList
       data={devices}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item}
       renderItem={renderItem}
       contentContainerStyle={styles.container}
     />
