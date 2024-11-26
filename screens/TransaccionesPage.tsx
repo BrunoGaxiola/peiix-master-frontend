@@ -105,6 +105,27 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
     loadFontsAndData();
   }, []);
 
+    // Función auxiliar para formatear el estado de la transacción
+    const formatTransactionStatus = (status: string): string => {
+      if (status.toLowerCase().includes('rechazada')) {
+        return 'Rechazada';
+      }
+      // Puedes añadir más condiciones aquí para otros estados si lo deseas
+      // Por ejemplo:
+      // if (status.toLowerCase().includes('aprobada')) {
+      //   return 'Aprobada';
+      // }
+      return capitalizeFirstLetter(status);
+    };
+
+
+// Función auxiliar para capitalizar la primera letra
+const capitalizeFirstLetter = (text: string): string => {
+  if (text.length === 0) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
+  
+
   // Función para obtener todas las transacciones
   const fetchAllTransactions = async () => {
     if (loading) return;
@@ -113,7 +134,6 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
 
     try {
       const params: any = {
-        
         dateFrom: '2000-01-01 00:00:00', // Fecha mínima
         dateTo: '2024-11-11 23:59:59',   // Fecha máxima para incluir 2024
         size: 100, // Asignar un tamaño suficientemente grande para obtener todas las transacciones
@@ -225,7 +245,7 @@ const TransaccionesPage: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.bold}>Tarjeta:</Text> {item.masked_card || 'N/A'}
       </Text>
       <Text style={styles.detail}>
-        <Text style={styles.bold}>Estado:</Text> {item.transaction_status || 'N/A'}
+        <Text style={styles.bold}>Estado:</Text> {formatTransactionStatus(item.transaction_status) || 'N/A'}
       </Text>
     </TouchableOpacity>
   );
@@ -322,7 +342,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   bold: {
-    fontWeight: 'bold',
+    fontFamily: 'MontserratSemiBold', // Usar fuente semi-bold para negrita
   },
   loadingContainer: {
     flex: 1,
@@ -337,7 +357,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#999',
-    fontFamily: 'MontserratRegular',
+    fontFamily: 'MontserratRegular', // Usar fuente regular
   },
 });
 

@@ -1,6 +1,6 @@
 // FilterModal.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons } from '@expo/vector-icons';
+import * as Font from 'expo-font';
 
 // Definir la interfaz Filters acorde a los requisitos
 interface Filters {
@@ -49,6 +50,24 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
   const [bank, setBank] = useState<string | null>(null);
   const [cardType, setCardType] = useState<string | null>(null);
   const [transactionStatus, setTransactionStatus] = useState<string | null>(null);
+
+    // Estado para cargar fuentes
+    const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
+
+    useEffect(() => {
+      async function loadFonts() {
+        try {
+          await Font.loadAsync({
+            MontserratRegular: require('../assets/fonts/Montserrat-Regular.ttf'),
+            MontserratSemiBold: require('../assets/fonts/Montserrat-SemiBold.ttf'),
+          });
+          setFontsLoaded(true);
+        } catch (error) {
+          console.error('Error loading fonts:', error);
+        }
+      }
+      loadFonts();
+    }, []);
 
   // Función para formatear las fechas
   const formatDate = (date: { day: string | null; month: string | null; year: string | null }): string | null => {
@@ -161,7 +180,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
               <View style={styles.datePicker}>
                 <RNPickerSelect
                   onValueChange={(value) => setDateFrom((prev) => ({ ...prev, year: value }))}
-                  items={[...Array(30).keys()].map((i) => ({
+                  items={[...Array(5).keys()].map((i) => ({
                     label: `${2020 + i}`, // Ajusta según necesites
                     value: `${2020 + i}`,
                   }))}
@@ -207,7 +226,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
               <View style={styles.datePicker}>
                 <RNPickerSelect
                   onValueChange={(value) => setDateTo((prev) => ({ ...prev, year: value }))}
-                  items={[...Array(30).keys()].map((i) => ({
+                  items={[...Array(5).keys()].map((i) => ({
                     label: `${2020 + i}`, // Ajusta según necesites
                     value: `${2020 + i}`,
                   }))}
@@ -230,7 +249,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
                   { label: 'BANCOMER', value: 'BANCOMER' },
                   { label: 'REGIGOLD', value: 'REGIGOLD' },
                   { label: 'TARJETAS DEL FUTURO', value: 'TARJETAS DEL FUTURO' },
-                  // { label: 'N/A', value: 'null' },
+                  { label: 'N/A', value: 'null' },
                   // Añadir más bancos según sea necesario
                 ]}
                 style={pickerSelectStyles}
@@ -249,7 +268,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose, onApplyFilt
                 items={[
                   { label: 'Débito', value: 'DEBIT' },
                   { label: 'Crédito', value: 'CREDIT' },
-                  // { label: 'N/A', value: 'null' },
+                  { label: 'N/A', value: 'null' },
                 ]}
                 style={pickerSelectStyles}
                 placeholder={{ label: 'Selecciona Tipo de Tarjeta', value: null }}
@@ -355,8 +374,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontFamily: 'MontserratSemiBold', // Usar fuente semi-bold
+    // fontWeight: 'bold',
+    marginBottom: 5,
   },
   pickerContainer: {
     width: '100%',
@@ -373,6 +393,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     fontSize: 20,
+    fontFamily: 'MontserratRegular', // Aplicar fuente regular al separador
     marginHorizontal: 5,
     alignSelf: 'center',
   },
@@ -389,6 +410,7 @@ const styles = StyleSheet.create({
   },
   filterButtonText: {
     color: '#fff',
+    fontFamily: 'MontserratSemiBold', // Usar fuente semi-bold
     fontWeight: 'bold',
     marginRight: 5,
     fontSize: 16,
@@ -410,6 +432,7 @@ const styles = StyleSheet.create({
   clearButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'MontserratSemiBold', // Usar fuente semi-bold
     marginRight: 5,
     fontSize: 16,
   },
@@ -418,7 +441,7 @@ const styles = StyleSheet.create({
   },
 });
 
-// Estilos para RNPickerSelect
+/// Estilos para RNPickerSelect
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     backgroundColor: '#fff',
@@ -428,6 +451,7 @@ const pickerSelectStyles = StyleSheet.create({
     textAlign: 'center',
     color: '#000', // Color de texto visible
     paddingRight: 30, // Asegurar que el texto no quede detrás del icono
+    fontFamily: 'MontserratRegular', // Aplicar fuente regular
   },
   inputAndroid: {
     backgroundColor: '#fff',
@@ -437,6 +461,7 @@ const pickerSelectStyles = StyleSheet.create({
     textAlign: 'center',
     color: '#000', // Color de texto visible
     paddingRight: 30, // Asegurar que el texto no quede detrás del icono
+    fontFamily: 'MontserratRegular', // Aplicar fuente regular
   },
   iconContainer: {
     top: '50%',
@@ -444,5 +469,6 @@ const pickerSelectStyles = StyleSheet.create({
   },
   placeholder: {
     color: '#aaa', // Color de texto del placeholder
+    fontFamily: 'MontserratRegular', // Aplicar fuente regular al placeholder
   },
 });

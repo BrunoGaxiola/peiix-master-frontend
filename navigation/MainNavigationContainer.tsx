@@ -38,7 +38,7 @@ function MainNavigationContainer() {
       tabBarStyle: {
         backgroundColor: '#000000',
         height: 96,
-        position: 'absolute',
+        position: 'relative',
         paddingTop: 10,
       },
       tabBarActiveTintColor: '#0E9600',

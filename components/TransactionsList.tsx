@@ -1,7 +1,8 @@
 // TransactionsList.tsx
 
-import React from 'react';
-import { FlatList, StyleSheet, View, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { FlatList, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
+import * as Font from 'expo-font';
 
 interface Transaction {
   transaction_id: number;
@@ -18,6 +19,23 @@ interface TransactionsListProps {
 }
 
 const TransactionsList: React.FC<TransactionsListProps> = ({ transactions }) => {
+  const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    async function loadFonts() {
+      try {
+        await Font.loadAsync({
+          MontserratRegular: require('../assets/fonts/Montserrat-Regular.ttf'),
+          MontserratSemiBold: require('../assets/fonts/Montserrat-SemiBold.ttf'),
+        });
+        setFontsLoaded(true);
+      } catch (error) {
+        console.error('Error loading fonts:', error);
+      }
+    }
+    loadFonts();
+  }, []);
+
   const renderItem = ({ item }: { item: Transaction }) => (
     <View style={styles.card}>
       <Text style={styles.amount}>{`$${item.total_amount.toFixed(2)}`}</Text>
@@ -38,8 +56,16 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions }) => 
 
   const formatDateForDisplay = (isoDate: string): string => {
     const date = new Date(isoDate);
-    return date.toLocaleString();
+    return date.toLocaleString(); // Ajusta según necesites
   };
+
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#F09600" />
+      </View>
+    );
+  }
 
   return (
     <FlatList
@@ -69,23 +95,29 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 10,
+    elevation: 10, // Requerido para sombra en Android
   },
   amount: {
     fontSize: 24,
-    fontFamily: 'MontserratSemiBold',
+    fontFamily: 'MontserratSemiBold', // Usar fuente semi-bold
     color: '#000',
     textAlign: 'center',
     marginBottom: 10,
   },
   detail: {
     fontSize: 14,
-    fontFamily: 'MontserratRegular',
+    fontFamily: 'MontserratRegular', // Usar fuente regular
     color: '#333',
     marginVertical: 2,
   },
   bold: {
-    fontWeight: 'bold',
+    fontFamily: 'MontserratSemiBold', // Usar fuente semi-bold en lugar de fontWeight
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
 });
 

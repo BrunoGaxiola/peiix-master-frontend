@@ -18,11 +18,15 @@ const TerminalesPage = () => {
 
   useEffect(() => {
     async function loadFonts() {
-      await Font.loadAsync({
-        MontserratRegular: require('../assets/fonts/Montserrat-Regular.ttf'),
-        MontserratSemiBold: require('../assets/fonts/Montserrat-SemiBold.ttf'),
-      });
-      setFontsLoaded(true);
+      try {
+        await Font.loadAsync({
+          MontserratRegular: require('../assets/fonts/Montserrat-Regular.ttf'),
+          MontserratSemiBold: require('../assets/fonts/Montserrat-SemiBold.ttf'),
+        });
+        setFontsLoaded(true);
+      } catch (error) {
+        console.error('Error loading fonts:', error);
+      }
     }
     loadFonts();
   }, []);
@@ -56,6 +60,7 @@ const TerminalesPage = () => {
       setDevices(devicesArray);
     } catch (error) {
       console.error('Error fetching devices:', error);
+      Alert.alert('Error', 'No se pudo cargar las terminales.');
     }
   };
 
@@ -79,6 +84,7 @@ const TerminalesPage = () => {
       setTransactions(response.data);
     } catch (error) {
       console.error('Error fetching transactions for device:', error);
+      Alert.alert('Error', 'No se pudieron cargar las transacciones de esta terminal.');
     } finally {
       setLoadingTransactions(false);
     }
@@ -91,7 +97,11 @@ const TerminalesPage = () => {
   };
 
   if (!fontsLoaded) {
-    return null;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#F09600" />
+      </View>
+    );
   }
 
   return (
@@ -105,7 +115,7 @@ const TerminalesPage = () => {
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Transacciones de {selectedDevice}</Text>
           {loadingTransactions ? (
-            <ActivityIndicator size="large" color="#0000ff" />
+            <ActivityIndicator size="large" color="#F09600" />
           ) : (
             <TransactionsList transactions={transactions} />
           )}
@@ -127,24 +137,33 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     backgroundColor: '#fff',
+    paddingHorizontal: 20,
   },
   modalTitle: {
     fontSize: 24,
     fontFamily: 'MontserratSemiBold',
     textAlign: 'center',
     marginBottom: 20,
+    color: '#000',
   },
   closeButton: {
     padding: 10,
-    backgroundColor: '#f5a623',
+    backgroundColor: '#F09600',
     borderRadius: 5,
     alignSelf: 'center',
     marginVertical: 20,
   },
   closeButtonText: {
     fontSize: 16,
-    color: '#000',
+    color: '#fff',
     fontFamily: 'MontserratRegular',
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
 });
 

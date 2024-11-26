@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+// ExportModal.tsx
+
+import React, { useState, useEffect } from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { apiFetch } from '../utils/api'; // Asegúrate de que la ruta es correcta
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import * as Font from 'expo-font';
 
 interface ExportModalProps {
   visible: boolean;
@@ -13,6 +24,22 @@ interface ExportModalProps {
 const ExportModal: React.FC<ExportModalProps> = ({ visible, onClose }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    async function loadFonts() {
+      try {
+        await Font.loadAsync({
+          MontserratRegular: require('../assets/fonts/Montserrat-Regular.ttf'),
+          MontserratSemiBold: require('../assets/fonts/Montserrat-SemiBold.ttf'),
+        });
+        setFontsLoaded(true);
+      } catch (error) {
+        console.error('Error loading fonts:', error);
+      }
+    }
+    loadFonts();
+  }, []);
 
   // Función para obtener la fecha y hora actual en formato YYYY-MM-DD_HH-MM-SS
   const getCurrentDateString = () => {
@@ -118,10 +145,18 @@ const ExportModal: React.FC<ExportModalProps> = ({ visible, onClose }) => {
     }
   };
 
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#F09600" />
+      </View>
+    );
+  }
+
   return (
     <Modal
       animationType="slide"
-      transparent={false}
+      transparent={true}
       visible={visible}
       onRequestClose={onClose}
     >
@@ -151,17 +186,17 @@ const ExportModal: React.FC<ExportModalProps> = ({ visible, onClose }) => {
           <TouchableOpacity
             style={[
               styles.exportButton,
-              { backgroundColor: selectedOption ? '#f5a623' : '#d3d3d3' }
+              { backgroundColor: selectedOption ? '#f5a623' : '#d3d3d3' },
             ]}
             onPress={handleExport}
             disabled={!selectedOption || loading}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#000" />
+              <ActivityIndicator size="small" color="#fff" />
             ) : (
               <>
                 <Text style={styles.exportButtonText}>Exportar</Text>
-                <Ionicons name="download" size={18} color="black" />
+                <Ionicons name="download" size={18} color="#fff" />
               </>
             )}
           </TouchableOpacity>
@@ -176,7 +211,7 @@ export default ExportModal;
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente para el modal
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -186,13 +221,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0e0e0',
     borderRadius: 10,
     alignItems: 'center',
+    position: 'relative', // Para posicionar el botón de cerrar
   },
   closeButton: {
     position: 'absolute',
-    top: 20,
-    right: 20,
+    top: 10,
+    right: 10,
     borderRadius: 20,
-    backgroundColor: 'black',
+    backgroundColor: '#000', // Fondo negro
     padding: 5,
   },
   option: {
@@ -204,30 +240,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 10,
+    paddingTop: 10, // Ajusta según necesites
   },
   optionText: {
-    marginLeft: 15,
+    marginLeft: 10,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'MontserratSemiBold', // Usar fuente semi-bold
+    color: '#000', // Color de texto negro
   },
   radio: {
-    height: 24,
-    width: 24,
-    borderRadius: 12,
-    borderWidth: 2,
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 3,
     borderColor: '#f5a623',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   radioSelected: {
-    height: 24,
-    width: 24,
-    borderRadius: 12,
-    borderWidth: 2,
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 3,
     borderColor: '#f5a623',
     backgroundColor: '#f5a623',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   exportButton: {
     flexDirection: 'row',
@@ -239,9 +273,16 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   exportButtonText: {
-    color: 'black',
+    color: '#fff',
     fontSize: 16,
     marginRight: 5,
-    fontWeight: 'bold',
+    fontFamily: 'MontserratSemiBold', // Usar fuente semi-bold
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
 });

@@ -38,7 +38,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
         setLoading(true);
         try {
-            const response = await fetch(`http://10.41.48.243:5000/login`, {
+            const response = await fetch(`${API_BASE_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
