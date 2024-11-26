@@ -14,6 +14,19 @@ const ExportModal: React.FC<ExportModalProps> = ({ visible, onClose }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Función para obtener la fecha y hora actual en formato YYYY-MM-DD_HH-MM-SS
+  const getCurrentDateString = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+  };
+
+  // Función para manejar la exportación del archivo
   const handleExport = async () => {
     if (!selectedOption) {
       Alert.alert('Error', 'Por favor, selecciona un formato para exportar.');
@@ -35,20 +48,33 @@ const ExportModal: React.FC<ExportModalProps> = ({ visible, onClose }) => {
       const responseType = selectedOption === 'CSV' ? 'text' : 'blob';
       const response = await apiFetch(endpoint, { method: 'GET', params }, responseType);
 
+      // Obtener la fecha actual para el nombre del archivo
+      const currentDate = getCurrentDateString();
+
       if (selectedOption === 'CSV') {
         // Manejar la respuesta CSV
         const csvText: string = response;
 
+        // Define el nombre del archivo con la fecha y hora actual
+        const csvFilename = `transactions_${currentDate}.csv`;
+        const csvUri = `${FileSystem.documentDirectory}${csvFilename}`;
+
         // Guarda el CSV en el sistema de archivos
-        const csvUri = `${FileSystem.documentDirectory}transactions_${Date.now()}.csv`;
         await FileSystem.writeAsStringAsync(csvUri, csvText, { encoding: FileSystem.EncodingType.UTF8 });
 
-        // Compartir o abrir el CSV
-        await Sharing.shareAsync(csvUri, {
-          mimeType: 'text/csv',
-          dialogTitle: 'Compartir CSV',
-          UTI: 'public.comma-separated-values-text',
-        });
+        // Compartir el archivo CSV para que el usuario pueda guardarlo
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(csvUri, {
+            mimeType: 'text/csv',
+            dialogTitle: 'Guardar CSV',
+            UTI: 'public.comma-separated-values-text',
+          });
+        } else {
+          Alert.alert('Error', 'Compartir no está disponible en este dispositivo.');
+        }
+
+        Alert.alert('Éxito', `Transacciones exportadas como ${csvFilename}.`);
+        onClose();
       } else if (selectedOption === 'PDF') {
         // Manejar la respuesta PDF
         const pdfBlob: Blob = response;
@@ -60,23 +86,30 @@ const ExportModal: React.FC<ExportModalProps> = ({ visible, onClose }) => {
           const base64data = reader.result as string;
           const base64 = base64data.split(',')[1];
 
+          // Define el nombre del archivo con la fecha y hora actual
+          const pdfFilename = `transactions_${currentDate}.pdf`;
+          const pdfUri = `${FileSystem.documentDirectory}${pdfFilename}`;
+
           // Guarda el PDF en el sistema de archivos
-          const pdfUri = `${FileSystem.documentDirectory}transactions_${Date.now()}.pdf`;
           await FileSystem.writeAsStringAsync(pdfUri, base64, {
             encoding: FileSystem.EncodingType.Base64,
           });
 
-          // Compartir o abrir el PDF
-          await Sharing.shareAsync(pdfUri, {
-            mimeType: 'application/pdf',
-            dialogTitle: 'Compartir PDF',
-            UTI: 'com.adobe.pdf',
-          });
+          // Compartir el archivo PDF para que el usuario pueda guardarlo
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(pdfUri, {
+              mimeType: 'application/pdf',
+              dialogTitle: 'Guardar PDF',
+              UTI: 'com.adobe.pdf',
+            });
+          } else {
+            Alert.alert('Error', 'Compartir no está disponible en este dispositivo.');
+          }
+
+          Alert.alert('Éxito', `Transacciones exportadas como ${pdfFilename}.`);
+          onClose();
         };
       }
-
-      Alert.alert('Éxito', `Transacciones exportadas como ${selectedOption}.`);
-      onClose();
     } catch (error: any) {
       console.error(error);
       Alert.alert('Error', error.message || 'Ocurrió un error al exportar las transacciones.');
@@ -84,6 +117,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ visible, onClose }) => {
       setLoading(false);
     }
   };
+
   return (
     <Modal
       animationType="slide"
@@ -93,31 +127,32 @@ const ExportModal: React.FC<ExportModalProps> = ({ visible, onClose }) => {
     >
       <View style={styles.overlay}>
         <View style={styles.modalView}>
-          {/* Close Button */}
+          {/* Botón de Cerrar */}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Ionicons name="close" size={35} color="white" />
           </TouchableOpacity>
-          
-          
-          
-          {/* Export Options */}
+
+          {/* Opciones de Exportación */}
           <View style={styles.option1}>
             <TouchableOpacity onPress={() => setSelectedOption('PDF')}>
               <View style={selectedOption === 'PDF' ? styles.radioSelected : styles.radio} />
             </TouchableOpacity>
             <Text style={styles.optionText}>Exportar a PDF</Text>
           </View>
-          
+
           <View style={styles.option}>
             <TouchableOpacity onPress={() => setSelectedOption('CSV')}>
               <View style={selectedOption === 'CSV' ? styles.radioSelected : styles.radio} />
             </TouchableOpacity>
             <Text style={styles.optionText}>Exportar a CSV</Text>
           </View>
-          
-          {/* Export Button */}
-          <TouchableOpacity 
-            style={[styles.exportButton, { backgroundColor: selectedOption ? '#f5a623' : '#d3d3d3' }]} 
+
+          {/* Botón de Exportar */}
+          <TouchableOpacity
+            style={[
+              styles.exportButton,
+              { backgroundColor: selectedOption ? '#f5a623' : '#d3d3d3' }
+            ]}
             onPress={handleExport}
             disabled={!selectedOption || loading}
           >
@@ -146,8 +181,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalView: {
-    width: 380,
-    height: 850,
+    width: '90%',
     padding: 20,
     backgroundColor: '#e0e0e0',
     borderRadius: 10,
@@ -155,10 +189,11 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 100,
-    left: 30,
+    top: 20,
+    right: 20,
     borderRadius: 20,
     backgroundColor: 'black',
+    padding: 5,
   },
   option: {
     flexDirection: 'row',
@@ -166,30 +201,33 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   option1: {
-    paddingTop: 200,
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 10,
   },
   optionText: {
-    marginLeft: 30,
-    fontSize: 22,
+    marginLeft: 15,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   radio: {
-    height:40,
-    width: 40,
-    borderRadius: 20,
-    borderWidth: 5,
+    height: 24,
+    width: 24,
+    borderRadius: 12,
+    borderWidth: 2,
     borderColor: '#f5a623',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   radioSelected: {
-    height: 40,
-    width: 40,
-    borderRadius: 20,
-    borderWidth: 5,
+    height: 24,
+    width: 24,
+    borderRadius: 12,
+    borderWidth: 2,
     borderColor: '#f5a623',
     backgroundColor: '#f5a623',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   exportButton: {
     flexDirection: 'row',
@@ -198,7 +236,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
-    marginTop: 100,
+    marginTop: 30,
   },
   exportButtonText: {
     color: 'black',

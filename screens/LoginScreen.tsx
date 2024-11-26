@@ -38,7 +38,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
         setLoading(true);
         try {
-            const response = await fetch(`http://10.41.50.48:5000/login`, {
+            const response = await fetch(`http://10.41.48.243:5000/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 });
             } else {
                 // Handle errors returned from the API
-                Alert.alert("Login Fallido", data.error || "Hubo un problema al iniciar sesión.");
+                Alert.alert("Login Fallido", "Correo electrónico o contraseña incorrectos");
             }
         } catch (error) {
             console.error(error);

@@ -28,7 +28,7 @@ export const apiFetch = async (
   options: FetchOptions = {},
   responseType: ResponseType = 'json'
 ) => {
-  const url = new URL(`http://10.41.50.48:5000${endpoint}`);
+  const url = new URL(`http://10.41.48.243:5000${endpoint}`);
 
   // Append query parameters if any
   if (options.params) {
